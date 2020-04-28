@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.buttonClose = new System.Windows.Forms.Button();
             this.groupBoxOPCServerSettings = new System.Windows.Forms.GroupBox();
             this.buttonOPCSave = new System.Windows.Forms.Button();
@@ -44,6 +45,7 @@
             this.OPC1 = new RSPODemo.UCOPCIndicator();
             this.statusStripMain = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabelOPCConnection = new System.Windows.Forms.ToolStripStatusLabel();
+            this.timerMain = new System.Windows.Forms.Timer(this.components);
             this.groupBoxOPCServerSettings.SuspendLayout();
             this.statusStripMain.SuspendLayout();
             this.SuspendLayout();
@@ -205,6 +207,11 @@
             this.toolStripStatusLabelOPCConnection.Size = new System.Drawing.Size(99, 17);
             this.toolStripStatusLabelOPCConnection.Text = "OPC: UNKNOWN";
             // 
+            // timerMain
+            // 
+            this.timerMain.Interval = 1000;
+            this.timerMain.Tick += new System.EventHandler(this.timerMain_Tick);
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -249,6 +256,7 @@
         private System.Windows.Forms.Button buttonOPCSave;
         private System.Windows.Forms.StatusStrip statusStripMain;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelOPCConnection;
+        private System.Windows.Forms.Timer timerMain;
     }
 }
 

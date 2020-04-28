@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Data;
+using System.Data.SQLite;
 
 using System.Globalization;
 
@@ -21,6 +23,10 @@ namespace RSPODemo
         ApplicationSettings appSettings; // Объект для хранения настроек приложения        
         OPCControl _OPCControl; // Объект дла работы с ОРС сервером
         List<OPCTag> TAG; // Список объектов типа OPCTag { Имя_тега, Тип_данных }
+        
+        private string _PathToDB = "dbmonitoring.db";
+        private string _ConnectionString;
+        private SQLiteConnection _SqliteConnection;
 
         #region TAG Values Holder - Глобальные переменные для хранения текущих значений тегов
         double _Functions_Ramp1 = 0.0;
@@ -221,6 +227,10 @@ namespace RSPODemo
             OPC2.Initialization("OPC II", "Information");
             OPC3.Initialization("OPC III", "Information");
             OPC4.Initialization("OPC IV", "Information");
+
+            _ConnectionString = String.Format("Data Source={0};Version=3;", _PathToDB);
+            _SqliteConnection = new SQLiteConnection(_ConnectionString);
+            _SqliteConnection.Open();
         }
 
         private void buttonOPCSave_Click(object sender, EventArgs e)
@@ -296,10 +306,14 @@ namespace RSPODemo
             if (_OPCControl.DAServer.ServerState == ServerState.CONNECTED)
             {
                 buttonOPCConnect.Text = "DISCONNECT";
+                // timerMain.Enabled = true;
+                timerMain.Start();
             }
             else
             {
                 buttonOPCConnect.Text = "CONNECT";
+                // timerMain.Enabled = false;
+                timerMain.Stop();
                 MessageBox.Show("Disconnected from OPC server", "OPC server connection status", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
@@ -308,6 +322,9 @@ namespace RSPODemo
         {
             // Сохраняем настройки в файл
             appSettings.Save();
+
+            if (_SqliteConnection.State == ConnectionState.Open)
+                _SqliteConnection.Close();
 
             // Проверяем, установлено ли соединение с сервером, если установлено - разрываем соединение перед закрытием формы
             if (_OPCControl.DAServer.ServerState == ServerState.CONNECTED)
@@ -323,6 +340,36 @@ namespace RSPODemo
                 }
                 catch { }
             }
+        }
+
+        private void timerMain_Tick(object sender, EventArgs e)
+        {
+
+            Application.DoEvents();
+
+            if (_SqliteConnection.State == ConnectionState.Closed)
+                return;
+
+            Int32 _DateUnix = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+
+            try
+            {
+                using (SQLiteCommand sqliteCommand = _SqliteConnection.CreateCommand())
+                {
+                    sqliteCommand.CommandText = "INSERT INTO [tblData] (TimeStamp, Ramp1, Random1, Sine1) VALUES (@pTimeStamp, @pRamp1, @pRandom1, @pSine1)";
+                    sqliteCommand.CommandType = CommandType.Text;
+                    sqliteCommand.Parameters.Add(new SQLiteParameter("@pTimeStamp", _DateUnix));
+                    sqliteCommand.Parameters.Add(new SQLiteParameter("@pRamp1", _Functions_Ramp1));
+                    sqliteCommand.Parameters.Add(new SQLiteParameter("@pRandom1", _Functions_Random1));
+                    sqliteCommand.Parameters.Add(new SQLiteParameter("@pSine1", _Functions_Sine1));
+
+                    sqliteCommand.ExecuteNonQuery();
+                }
+            }
+            catch { }
+            
+
+            Application.DoEvents();
         }
     }
     // Вспомогательные клас для преобразования строки в различные типы данных
