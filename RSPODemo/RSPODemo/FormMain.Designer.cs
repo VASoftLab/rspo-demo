@@ -29,7 +29,6 @@
         private void InitializeComponent()
         {
             this.buttonClose = new System.Windows.Forms.Button();
-            this.buttonOK = new System.Windows.Forms.Button();
             this.groupBoxOPCServerSettings = new System.Windows.Forms.GroupBox();
             this.buttonOPCSave = new System.Windows.Forms.Button();
             this.labelServerIdentifier = new System.Windows.Forms.Label();
@@ -52,23 +51,13 @@
             // buttonClose
             // 
             this.buttonClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonClose.Location = new System.Drawing.Point(491, 317);
+            this.buttonClose.Location = new System.Drawing.Point(422, 317);
             this.buttonClose.Name = "buttonClose";
-            this.buttonClose.Size = new System.Drawing.Size(75, 23);
+            this.buttonClose.Size = new System.Drawing.Size(144, 23);
             this.buttonClose.TabIndex = 0;
             this.buttonClose.Text = "Close";
             this.buttonClose.UseVisualStyleBackColor = true;
             this.buttonClose.Click += new System.EventHandler(this.buttonClose_Click);
-            // 
-            // buttonOK
-            // 
-            this.buttonOK.Location = new System.Drawing.Point(12, 317);
-            this.buttonOK.Name = "buttonOK";
-            this.buttonOK.Size = new System.Drawing.Size(75, 23);
-            this.buttonOK.TabIndex = 8;
-            this.buttonOK.Text = "OK";
-            this.buttonOK.UseVisualStyleBackColor = true;
-            this.buttonOK.Click += new System.EventHandler(this.buttonOK_Click);
             // 
             // groupBoxOPCServerSettings
             // 
@@ -89,9 +78,9 @@
             // 
             // buttonOPCSave
             // 
-            this.buttonOPCSave.Location = new System.Drawing.Point(311, 64);
+            this.buttonOPCSave.Location = new System.Drawing.Point(313, 64);
             this.buttonOPCSave.Name = "buttonOPCSave";
-            this.buttonOPCSave.Size = new System.Drawing.Size(76, 23);
+            this.buttonOPCSave.Size = new System.Drawing.Size(97, 23);
             this.buttonOPCSave.TabIndex = 8;
             this.buttonOPCSave.Text = "SAVE";
             this.buttonOPCSave.UseVisualStyleBackColor = true;
@@ -147,9 +136,9 @@
             // 
             // buttonOPCConnect
             // 
-            this.buttonOPCConnect.Location = new System.Drawing.Point(393, 64);
+            this.buttonOPCConnect.Location = new System.Drawing.Point(416, 64);
             this.buttonOPCConnect.Name = "buttonOPCConnect";
-            this.buttonOPCConnect.Size = new System.Drawing.Size(167, 23);
+            this.buttonOPCConnect.Size = new System.Drawing.Size(144, 23);
             this.buttonOPCConnect.TabIndex = 0;
             this.buttonOPCConnect.Text = "CONNECT";
             this.buttonOPCConnect.UseVisualStyleBackColor = true;
@@ -224,7 +213,6 @@
             this.Controls.Add(this.statusStripMain);
             this.Controls.Add(this.groupBoxOPCServerSettings);
             this.Controls.Add(this.OPC4);
-            this.Controls.Add(this.buttonOK);
             this.Controls.Add(this.OPC3);
             this.Controls.Add(this.OPC2);
             this.Controls.Add(this.OPC1);
@@ -249,7 +237,6 @@
         private UCOPCIndicator OPC1;
         private UCOPCIndicator OPC2;
         private UCOPCIndicator OPC3;
-        private System.Windows.Forms.Button buttonOK;
         private UCOPCIndicator OPC4;
         private System.Windows.Forms.GroupBox groupBoxOPCServerSettings;
         private System.Windows.Forms.Label labelServerIdentifier;

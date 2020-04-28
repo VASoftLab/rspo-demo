@@ -18,12 +18,11 @@ namespace RSPODemo
 {
     public partial class FormMain : Form
     {
-        ApplicationSettings appSettings;
-        Dictionary<string, string> TAGVALUE;
-        OPCControl _OPCControl;
-        List<OPCTag> TAG;
+        ApplicationSettings appSettings; // Объект для хранения настроек приложения        
+        OPCControl _OPCControl; // Объект дла работы с ОРС сервером
+        List<OPCTag> TAG; // Список объектов типа OPCTag { Имя_тега, Тип_данных }
 
-        #region TAG Values Holder
+        #region TAG Values Holder - Глобальные переменные для хранения текущих значений тегов
         double _Functions_Ramp1 = 0.0;
         double _Functions_Ramp2 = 0.0;
         double _Functions_Ramp3 = 0.0;
@@ -43,13 +42,16 @@ namespace RSPODemo
         public FormMain()
         {
             InitializeComponent();
+            // Создаем экзепляр объекта для работы с настройками приложения
             appSettings = new ApplicationSettings();
-
-            TAGVALUE = new Dictionary<string, string>();
+            // Создаем список объектов типа OPCTag и заполняем его из файла TagList.csv
             TAG = new List<OPCTag>();
             FillTAGList();
 
+            // Создаем объект для работы с ОРС сервером
             _OPCControl = new OPCControl();
+            // Подписываемся на события от сервера
+            // Изменение состояния сервера и Изменение состояния данных
             _OPCControl.SubscribeToOPCDAServerEvents(DAServer_StateChanged, DAServer_DataChanged);
         }
 
@@ -102,12 +104,12 @@ namespace RSPODemo
                 if (_OPCControl.IDTAG.ContainsKey((int)item.ClientHandle))
                 {
                     itemName = _OPCControl.IDTAG[(int)item.ClientHandle];
-                    if (TAGVALUE.ContainsKey(itemName))
-                        TAGVALUE[itemName] = item.Value.ToString();
-
+                    
                     if (itemName == "Simulation Examples.Functions.Ramp1")
                     {
+                        // Запоминаем текущее значение в глобальной переменной
                         _Functions_Ramp1 = item.Value.ToString().ToDouble();
+                        // Передаем текущее значение для отображения на пользовательском компоненте
                         OPC1.RAMP = _Functions_Ramp1;
                     }
                     if (itemName == "Simulation Examples.Functions.Ramp2")
@@ -175,14 +177,15 @@ namespace RSPODemo
         private void FillTAGList()
         {
             String[] TAG_LIST_WITH_TYPES;
-            String fileTagList = "TagList.csv";
-            if (System.IO.File.Exists(fileTagList) == true)
+            String fileTagList = "TagList.csv"; // Имя файла с информацией о тегах
+            if (System.IO.File.Exists(fileTagList) == true) // Проверка на существование файла
             {
+                // Считываем содержимое файла в массив string[]
                 TAG_LIST_WITH_TYPES = System.IO.File.ReadAllLines(fileTagList);
-                String[] data;
+                String[] data; // Буферный массив
                 foreach (String T in TAG_LIST_WITH_TYPES)
                 {
-                    data = T.Split(',');
+                    data = T.Split(','); // Разделяем компоненты строки разделенные запятыми на отдельные компоненты массива
                     if ((data[1].ToLower() == "double") || (data[1] == "System.Double"))
                         TAG.Add(new OPCTag() { Name = data[0], Type = OPCTagType.Double });
                     if ((data[1].ToLower() == "boolean") || (data[1] == "System.Boolean"))
@@ -191,8 +194,6 @@ namespace RSPODemo
                         TAG.Add(new OPCTag() { Name = data[0], Type = OPCTagType.String });
                     if ((data[1].ToLower() == "long") || (data[1] == "System.Long"))
                         TAG.Add(new OPCTag() { Name = data[0], Type = OPCTagType.Long });
-
-                    TAGVALUE.Add(data[0], String.Empty);
                 }
             }
         }
@@ -205,35 +206,17 @@ namespace RSPODemo
             }
         }
 
-        private void buttonOK_Click(object sender, EventArgs e)
-        {
-            Random rnd = new Random();
-            
-            OPC1.RAMP = Math.PI;
-            OPC1.RAND = rnd.NextDouble();
-            OPC1.SINE = Math.Sin(rnd.Next());
-
-            OPC2.RAMP = Math.PI;
-            OPC2.RAND = rnd.NextDouble();
-            OPC2.SINE = Math.Sin(rnd.Next());
-
-            OPC3.RAMP = Math.PI;
-            OPC3.RAND = rnd.NextDouble();
-            OPC3.SINE = Math.Sin(rnd.Next());
-
-            OPC4.RAMP = Math.PI;
-            OPC4.RAND = rnd.NextDouble();
-            OPC4.SINE = Math.Sin(rnd.Next());
-        }
-
         private void FormMain_Load(object sender, EventArgs e)
         {
+            // Загрузка настроек из файла
             appSettings.Load();
 
+            // Отображаем текущие настройка на форме
             textBoxHostName.Text = appSettings.HostName;
             textBoxPortNumber.Text = appSettings.PortNumber.ToString();
             textBoxServerIdentifier.Text = appSettings.ServerIdentifier.ToString();
 
+            // Инициализация пользовательских компонент
             OPC1.Initialization("OPC I", "Information");
             OPC2.Initialization("OPC II", "Information");
             OPC3.Initialization("OPC III", "Information");
@@ -242,6 +225,7 @@ namespace RSPODemo
 
         private void buttonOPCSave_Click(object sender, EventArgs e)
         {
+            // Сохранение текущих настроек в файл
             appSettings.HostName = textBoxHostName.Text;
 
             int PortNumber = 0;
@@ -254,47 +238,61 @@ namespace RSPODemo
 
         private void buttonOPCConnect_Click(object sender, EventArgs e)
         {
+            // Соединение с сервером
             if (_OPCControl.DAServer.ServerState == ServerState.DISCONNECTED)
             {
+                // Connection string - адрес сервера для подключения
                 String UrlString = String.Format("opcda://{0}/{1}/", appSettings.HostName, appSettings.ServerIdentifier);
+                // Установка адреса
                 _OPCControl.SetURL(UrlString);
+                // Соединение с сервером - true - команда установки соединения
                 _OPCControl.ConnectOPCServer(true);
 
+                // Проверяем, удалось ли установить соединение
                 if (_OPCControl.IsConnected == false)
                 {
                     MessageBox.Show("OPC server connection problem!\nCheck OPC connection settings.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
+                // Определяем кол-во тегов, на которые удалось подписаться
                 int subscribedCount = _OPCControl.SubscribeData(TAG);
 
+                // Вывод диагностического сообщения
                 MessageBox.Show(String.Format("Subscribed {0} from {1} tags", subscribedCount, TAG.Count), "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
+                // Устанавливаем признак изменения состояния подписки
                 _OPCControl.ModifySubscription(true);
-                _OPCControl.ReadSynchronously(TAGVALUE);
+                // Асинхронное чтение - не используется
+                //_OPCControl.ReadSynchronously(TAGVALUE);
             }
             else
             {
+                // Отключение от сервера
                 if (_OPCControl.DAServer.ServerState == ServerState.CONNECTED)
                 {
+                    // Получаем подтверждение отключения от сервера
                     if (MessageBox.Show("Are you sure you want to disconnect?", "Confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == System.Windows.Forms.DialogResult.Yes)
                     {
                         try
                         {
                             if ((_OPCControl != null) && (_OPCControl.IsConnected == true))
                             {
+                                // Отписываемся от данных
                                 _OPCControl.UnSubscribeData();
+                                // Выставляем флаг изменения подписка
                                 _OPCControl.ModifySubscription(true);
+                                // Разрываем соединение - false - команда на отключение от сервера
                                 _OPCControl.ConnectOPCServer(false);
                             }
                         }
-                        catch (Exception E)
+                        catch (Exception E) // Обработчик исключительной ситуации
                         {
                             String S = E.ToString(); // appLog.WriteLog(E.ToString());
                         }
                     }
                 }
             }
-
+            // Обновляем информационное сообщение в строке статуса
             if (_OPCControl.DAServer.ServerState == ServerState.CONNECTED)
             {
                 buttonOPCConnect.Text = "DISCONNECT";
@@ -308,8 +306,10 @@ namespace RSPODemo
 
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
         {
+            // Сохраняем настройки в файл
             appSettings.Save();
 
+            // Проверяем, установлено ли соединение с сервером, если установлено - разрываем соединение перед закрытием формы
             if (_OPCControl.DAServer.ServerState == ServerState.CONNECTED)
             {
                 try
@@ -325,7 +325,7 @@ namespace RSPODemo
             }
         }
     }
-
+    // Вспомогательные клас для преобразования строки в различные типы данных
     public static class StringConverterHelper
     {
         static readonly NumberFormatInfo provider = new NumberFormatInfo();
